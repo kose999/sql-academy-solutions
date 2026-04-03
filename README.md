@@ -1086,7 +1086,13 @@ ORDER BY year, month
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    room_id
+    , FLOOR(AVG(rating)) as rating
+FROM Reservations
+    JOIN Reviews
+        ON Reservations.id = Reviews.reservation_id
+GROUP BY room_id
 ```
 
 </details>
@@ -1097,7 +1103,16 @@ ORDER BY year, month
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    home_type
+    , address
+    , COALESCE(SUM(total / Reservations.price), 0) as days
+    , COALESCE(SUM(total), 0) as total_fee
+FROM Rooms
+    LEFT JOIN Reservations
+        ON Rooms.id = Reservations.room_id
+WHERE has_tv AND has_internet AND has_kitchen AND has_air_con
+GROUP BY home_type, address
 ```
 
 </details>
@@ -1108,7 +1123,10 @@ ORDER BY year, month
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    TO_CHAR(time_out, 'HH24:MI, FMDD.FMMM') || ' - ' ||
+        TO_CHAR(time_in, 'HH24:MI, FMDD.FMMM') as flight_time
+FROM Trip
 ```
 
 </details>
