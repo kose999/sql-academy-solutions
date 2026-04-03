@@ -1180,7 +1180,21 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+with cte as (
+    SELECT 
+        id
+        , case 
+            when price <= 100 then 'economy' 
+            when price < 200 then 'comfort' 
+            else 'premium' 
+        END as category
+    FROM Rooms
+)
+SELECT 
+    category
+    , COUNT(*) as count
+FROM cte
+GROUP BY category
 ```
 
 </details>
@@ -1191,7 +1205,25 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+WITH active_users as (
+    SELECT 
+        DISTINCT Users.id
+    FROM Users
+        JOIN Reservations ON Users.id = Reservations.user_id
+    UNION 
+    SELECT 
+        DISTINCT Users.id
+    FROM Users
+        JOIN Rooms ON Users.id = Rooms.owner_id
+        JOIN Reservations ON Rooms.id = Reservations.room_id
+)
+SELECT 
+    ROUND(
+        COUNT(*) * 1.0 / 
+            (SELECT COUNT(*) FROM Users) * 100
+        , 2
+    ) as percent
+FROM active_users
 ```
 
 </details>
@@ -1202,7 +1234,11 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    room_id
+    , CEIL(AVG(price)) as avg_price
+FROM Reservations
+GROUP BY room_id
 ```
 
 </details>
@@ -1214,7 +1250,12 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    room_id
+    , COUNT(*) as count
+FROM Reservations
+GROUP BY room_id
+HAVING MOD(COUNT(*), 2) = 1
 ```
 
 </details>
@@ -1225,7 +1266,10 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    id
+    , case when has_internet then 'YES' else 'NO' end as has_internet
+FROM Rooms
 ```
 
 </details>
@@ -1237,7 +1281,12 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    last_name
+    , first_name
+    , birthday
+FROM Student
+WHERE EXTRACT(month FROM birthday) = 5
 ```
 
 </details>
@@ -1249,7 +1298,30 @@ GROUP BY owner_id
   <summary>Решение</summary>
 
 ```postgresql
-
+WITH users_info as (
+    SELECT 
+        Users.id
+        , case 
+            when COALESCE(COUNT(Rooms.id), 0) > 0 
+            then 1 
+            else 0 
+        end as is_owner
+        , case 
+            when COALESCE(COUNT(Reservations.id), 0) > 0 
+            then 1 
+            else 0 
+        end as is_tenant
+    FROM Users
+        LEFT JOIN Rooms ON Users.id = Rooms.owner_id
+        LEFT JOIN Reservations ON Users.id = Reservations.user_id
+    GROUP BY Users.id
+)
+SELECT 
+    name
+    , COALESCE(is_owner, 0) as is_owner
+    , COALESCE(is_tenant, 0) as is_tenant
+FROM Users
+    LEFT JOIN users_info ON Users.id = users_info.id
 ```
 
 </details>
