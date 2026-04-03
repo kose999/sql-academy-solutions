@@ -1326,13 +1326,34 @@ FROM Users
 
 </details>
 
+<details>
+  <summary>Решение 2 (оптимизированное с помощью ИИ)</summary>
+
+```postgresql
+SELECT name,
+       id IN (SELECT owner_id FROM Rooms)::int AS is_owner,
+       id IN (SELECT user_id FROM Reservations)::int AS is_tenant
+FROM Users
+```
+
+</details>
+
 77. Создайте представление с именем "People", которое будет содержать список имен (first_name) и фамилий (last_name) всех студентов (Student) и преподавателей(Teacher) [(сайт)](https://sql-academy.org/ru/trainer/tasks/77)
 
 <details>
   <summary>Решение</summary>
 
 ```postgresql
-
+CREATE VIEW People as
+SELECT 
+    first_name
+    , last_name
+FROM Student
+UNION 
+SELECT 
+    first_name
+    , last_name
+FROM Teacher
 ```
 
 </details>
@@ -1344,7 +1365,9 @@ FROM Users
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT *
+FROM Users
+WHERE SPLIT_PART(email, '@', 2) = 'hotmail.com'
 ```
 
 </details>
@@ -1356,7 +1379,15 @@ FROM Users
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    id
+    , home_type
+    , case 
+        when has_tv AND has_internet 
+        then price * 0.9
+        else price
+    END as price
+FROM Rooms
 ```
 
 </details>
@@ -1367,7 +1398,40 @@ FROM Users
   <summary>Решение</summary>
 
 ```postgresql
-
+CREATE VIEW Verified_Users as 
+SELECT 
+    id
+    , name
+    , email
+FROM Users
+WHERE email_verified_at is not NULL
 ```
 
 </details>
+
+93. Какой средний возраст клиентов, купивших Smartwatch (использовать наименование товара product.name) в 2024 году? [(сайт)](https://sql-academy.org/ru/trainer/tasks/93)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+WITH cte as (
+    SELECT 
+        DISTINCT Customer.customer_key
+        , age
+    FROM Product
+        JOIN Purchase 
+            ON Product.product_key = Purchase.product_key 
+            AND Product.name = 'Smartwatch'
+            AND EXTRACT(year FROM date) = 2024
+        JOIN Customer ON Purchase.customer_key = Customer.customer_key
+)
+SELECT 
+    AVG(age) as average_age
+FROM cte
+```
+
+</details>
+
+
+
