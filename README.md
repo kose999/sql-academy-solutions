@@ -1137,7 +1137,23 @@ FROM Trip
   <summary>Решение</summary>
 
 ```postgresql
-
+WITH cte as (
+    SELECT 
+        Rooms.id as room_id
+        , LAST_VALUE(Users.name) OVER (PARTITION BY Rooms.id ORDER BY end_date rows BETWEEN unbounded preceding AND unbounded following) as name
+        , LAST_VALUE(end_date) OVER (PARTITION BY Rooms.id ORDER BY end_date) as end_date
+    FROM Reservations
+        JOIN Rooms
+            ON room_id = Rooms.id
+        JOIN Users
+            ON user_id = Users.id
+)
+SELECT 
+    room_id
+    , MAX(name) as name
+    , MAX(end_date) as end_date
+FROM cte
+GROUP BY room_id
 ```
 
 </details>
@@ -1148,7 +1164,12 @@ FROM Trip
   <summary>Решение</summary>
 
 ```postgresql
-
+SELECT 
+    owner_id
+    , COALESCE(SUM(total), 0) as total_earn
+FROM Rooms
+    LEFT JOIN Reservations ON Rooms.id = Reservations.room_id
+GROUP BY owner_id
 ```
 
 </details>
