@@ -1494,3 +1494,21 @@ HAVING COUNT(warehouse_id) > 80
 ```
 
 </details>
+
+🟢<img width="136" height="80" alt="image" src="https://github.com/user-attachments/assets/c23d511b-ad61-4fd9-823c-3922ebb3c9fe" />
+ 99. Посчитай доход с женской аудитории (доход = сумма(price * items)). Обратите внимание, что в таблице женская аудитория имеет поле user_gender «female» или «f». [(сайт)](https://sql-academy.org/ru/trainer/tasks/97)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT 
+    city
+    , COUNT(warehouse_id) as warehouse_count
+FROM Warehouses
+WHERE date_close is null
+GROUP BY city
+HAVING COUNT(warehouse_id) > 80
+```
+
+</details>
