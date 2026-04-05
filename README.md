@@ -1,6 +1,7 @@
 # Решение заданий из тренажера [SQL Academy](https://sql-academy.org/ru)
 
-
+_
+Примечание: при переходе на сайт SQL Academy необходимо переключить язык запроса на PostgeSQL._
 
 1. Вывести имена всех людей, которые есть в базе данных авиакомпаний [(сайт)](https://sql-academy.org/ru/trainer/tasks/1)
 
@@ -1473,7 +1474,7 @@ JOIN Product pr ON p.product_key = pr.product_key
 WHERE p.date >= '2024-03-01' AND p.date < '2024-04-01'
   AND pr.name IN ('Laptop', 'Monitor')
 GROUP BY c.name
-HAVING COUNT(DISTINCT pr.name) = 2;
+HAVING COUNT(DISTINCT pr.name) = 2
 ```
 
 </details>
@@ -1495,8 +1496,7 @@ HAVING COUNT(warehouse_id) > 80
 
 </details>
 
-🟢<img width="136" height="80" alt="image" src="https://github.com/user-attachments/assets/c23d511b-ad61-4fd9-823c-3922ebb3c9fe" />
- 99. Посчитай доход с женской аудитории (доход = сумма(price * items)). Обратите внимание, что в таблице женская аудитория имеет поле user_gender «female» или «f». [(сайт)](https://sql-academy.org/ru/trainer/tasks/97)
+🟢 (VK) 99. Посчитай доход с женской аудитории (доход = сумма(price * items)). Обратите внимание, что в таблице женская аудитория имеет поле user_gender «female» или «f». [(сайт)](https://sql-academy.org/ru/trainer/tasks/99)
 
 <details>
   <summary>Решение</summary>
@@ -1509,6 +1509,123 @@ FROM Warehouses
 WHERE date_close is null
 GROUP BY city
 HAVING COUNT(warehouse_id) > 80
+```
+
+</details>
+
+🟡 (VK) 101. Выведи для каждого пользователя первое наименование, которое он заказал (первое по времени транзакции). [(сайт)](https://sql-academy.org/ru/trainer/tasks/101)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+WITH cte as (
+    SELECT 
+        user_id
+        , item
+        , ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY transaction_ts) as rn
+    FROM Transactions
+)
+SELECT 
+    user_id
+    , item
+FROM cte
+WHERE rn = 1
+```
+
+</details>
+
+<details>
+  <summary>Решение 2 (оптимизированное с помощью ИИ)</summary>
+
+```postgresql
+SELECT DISTINCT ON (user_id)
+    user_id
+    , item
+FROM Transactions
+ORDER BY user_id, transaction_ts
+```
+
+</details>
+
+🟢 (Сбербанк) 103. Вывести список имён сотрудников, получающих большую заработную плату, чем у непосредственного руководителя. [(сайт)](https://sql-academy.org/ru/trainer/tasks/103)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT 
+   e1.name
+FROM Employee e1
+    JOIN Employee e2 ON e1.chief_id = e2.id
+WHERE e1.salary > e2.salary
+```
+
+</details>
+
+🟢 (ДомКлик) 109. Выведите название страны, где находится город «Salzburg» [(сайт)](https://sql-academy.org/ru/trainer/tasks/109)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT Countries.name as country_name
+FROM Cities
+    JOIN Regions ON regionid = Regions.id
+    JOIN Countries ON countryid = Countries.id
+WHERE Cities.name = 'Salzburg'
+```
+
+</details>
+
+🟡 (ДомКлик) 111. Посчитайте население каждого региона. В качестве результата выведите название региона и его численность населения. [(сайт)](https://sql-academy.org/ru/trainer/tasks/111)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT 
+    Regions.name as region_name
+    , COALESCE(SUM(population), 0) as total_population
+FROM Regions
+    LEFT JOIN Cities ON Regions.id = regionid
+GROUP BY Regions.name
+```
+
+</details>
+
+🟢 (Т-Банк) 114. Напишите запрос, который выведет имена пилотов, которые в качестве второго пилота (second_pilot_id) в августе 2023 года летали в New York [(сайт)](https://sql-academy.org/ru/trainer/tasks/114)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT Pilots.name
+FROM Flights
+    JOIN Pilots ON second_pilot_id = pilot_id
+WHERE 
+    flight_date >= '2023-08-01' 
+    AND 
+    flight_date <= '2023-08-31' 
+    AND 
+    destination = 'New York'
+```
+
+</details>
+
+🟡 (Finstar Financial Group) 123. Необходимо написать SQL-запрос, который покажет всех сотрудников, у кого в работе менее трех задач. Результат предоставить в виде: имя сотрудника, количество задач в работе. [(сайт)](https://sql-academy.org/ru/trainer/tasks/123)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT 
+    Employee.emp_name
+    , COALESCE(COUNT(Tasks.id), 0) as task_count
+FROM Employee
+    LEFT JOIN Tasks ON Employee.id = assignee_id
+GROUP BY Employee.id
+HAVING COALESCE(COUNT(Tasks.id), 0) < 3
 ```
 
 </details>
