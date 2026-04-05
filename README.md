@@ -1433,5 +1433,64 @@ FROM cte
 
 </details>
 
+94. Вывести имена покупателей, каждый из которых приобрёл Laptop и Monitor (использовать наименование товара product.name) в марте 2024 года? [(сайт)](https://sql-academy.org/ru/trainer/tasks/94)
 
+<details>
+  <summary>Решение</summary>
 
+```postgresql
+WITH cte as(
+    SELECT DISTINCT Customer.name
+    FROM Customer
+        JOIN Purchase ON Customer.customer_key = Purchase.customer_key
+        JOIN Product ON Purchase.product_key = Product.product_key
+    WHERE TO_CHAR(date, 'YYYY-MM') = '2024-03'
+        AND Product.name = 'Monitor'
+    UNION ALL
+    SELECT DISTINCT Customer.name
+    FROM Customer
+        JOIN Purchase ON Customer.customer_key = Purchase.customer_key
+        JOIN Product ON Purchase.product_key = Product.product_key
+    WHERE TO_CHAR(date, 'YYYY-MM') = '2024-03'
+        AND Product.name = 'Laptop'
+)
+SELECT name
+FROM cte
+GROUP BY name
+HAVING COUNT(*) = 2
+```
+
+</details>
+
+<details>
+  <summary>Решение 2 (оптимизированное с помощью ИИ)</summary>
+
+```postgresql
+SELECT c.name
+FROM Customer c
+JOIN Purchase p ON c.customer_key = p.customer_key
+JOIN Product pr ON p.product_key = pr.product_key
+WHERE p.date >= '2024-03-01' AND p.date < '2024-04-01'
+  AND pr.name IN ('Laptop', 'Monitor')
+GROUP BY c.name
+HAVING COUNT(DISTINCT pr.name) = 2;
+```
+
+</details>
+
+<img src="https://img.shields.io/badge/difficulty-medium-orange"> 97. Посчитать количество работающих складов на текущую дату по каждому городу. Вывести только те города, у которых количество складов более 80. Данные на выходе - город, количество складов. [(сайт)](https://sql-academy.org/ru/trainer/tasks/97)
+
+<details>
+  <summary>Решение</summary>
+
+```postgresql
+SELECT 
+    city
+    , COUNT(warehouse_id) as warehouse_count
+FROM Warehouses
+WHERE date_close is null
+GROUP BY city
+HAVING COUNT(warehouse_id) > 80
+```
+
+</details>
